@@ -47,8 +47,7 @@ export default class Packager {
       )
     }
 
-    if (env) throw new Error('Not implemented ENV support yet')
-    const env_overrides = {}
+    const env_overrides = await this.getSettingsOverrides(config, env)
 
     const deploy_config = config.deploy![target] as ConfigTypes.Union
     await packager.createPackage(
@@ -58,5 +57,17 @@ export default class Packager {
       env_overrides,
       assets_url
     )
+  }
+
+  // TODO: this should be common somewhere
+  private static async getSettingsOverrides(config: JSON5Config, env?: string) {
+    if (!env) {
+      return {}
+    }
+    const overrides = config.data.settings?.[env]
+    if (!overrides) {
+      throw new InvalidConfigError(`No environment '${env}' found in ${config}!`)
+    }
+    return overrides
   }
 }
